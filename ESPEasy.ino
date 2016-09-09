@@ -214,6 +214,8 @@
 #define BOOT_CAUSE_COLD_BOOT                1
 #define BOOT_CAUSE_EXT_WD                  10
 
+#define LOG_BUFFER_MAX                    128
+
 #include <ESP8266WiFi.h>
 #include <DNSServer.h>
 #include <WiFiUdp.h>
@@ -465,7 +467,14 @@ int WebLoggedInTimer = 300;
 boolean (*Plugin_ptr[PLUGIN_MAX])(byte, struct EventStruct*, String&);
 byte Plugin_id[PLUGIN_MAX];
 
+#define PLUGIN_HANDLER_IS_TYPE 1  // development only
+#if PLUGIN_HANDLER_IS_TYPE
+typedef boolean (*CPluginHandler)(byte, struct EventStruct*, String&);
+CPluginHandler CPlugin_ptr[PLUGIN_MAX];
+#else
 boolean (*CPlugin_ptr[PLUGIN_MAX])(byte, struct EventStruct*, String&);
+#endif /* PLUGIN_HANDLER_IS_TYPE */
+
 byte CPlugin_id[PLUGIN_MAX];
 
 String dummyString = "";

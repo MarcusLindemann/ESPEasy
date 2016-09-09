@@ -123,20 +123,69 @@ byte CPluginCall(byte Function, struct EventStruct *event)
   int x;
   struct EventStruct TempEvent;
 
- if (event == 0)
+  if (event == 0)
     event=&TempEvent;
-    
+
   switch (Function)
   {
     // Unconditional calls to all plugins
     case CPLUGIN_PROTOCOL_ADD:
       for (x = 0; x < CPLUGIN_MAX; x++)
-        if (CPlugin_id[x] != 0)
-          CPlugin_ptr[x](Function, event, dummyString);
+      {
+        CPlugin_ProtocolAdd(x,
+                            event,
+                            dummyString);
+	    }
       return true;
       break;
   }
 
   return false;
+}
+
+bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
+                                byte Function,
+                                struct EventStruct *Event,
+                                String& Text)
+{
+  const bool successful = true;
+  const bool failure = false;
+  
+  if ( (PluginIndex > CPLUGIN_MAX) ||
+       ( (Function < CPLUGIN_PROTOCOL_ADD) || (Function > CPLUGIN_WEBFORM_LOAD) ) )
+  {
+    char log[LOG_BUFFER_MAX];
+    sprintf_P(log, PSTR("CallPluginFunction: PluginIndex or Function out of bounds! Plugin(%d), Function(%d)"),PluginIndex,Function);
+    addLog(LOG_LEVEL_INFO, log);
+
+    return failure;  // we weren't successful
+  }
+
+  CPluginHandler PluginHandler = CPlugin_ptr[PluginIndex];
+  if ( NULL == PluginHandler )
+  {
+    char log[LOG_BUFFER_MAX];
+    sprintf_P(log, PSTR("CallPluginFunction: PluginHandler is NULL! Plugin(%d)"),PluginIndex);
+    addLog(LOG_LEVEL_INFO, log);
+    return failure;
+  }
+
+  return PluginHandler(Function, Event, Text);
+}
+
+bool CPlugin_ProtocolAdd(unsigned int PluginIndex,
+                         struct EventStruct *Event,
+                         String& Text)
+{
+  char log[LOG_BUFFER_MAX];
+  bool result = CPlugin_CallPluginFunction(PluginIndex,
+                                           CPLUGIN_PROTOCOL_ADD,
+                                           Event,
+                                           Text);
+
+  sprintf_P(log, PSTR("CPlugin_ProtocolAdd: Result %d! Plugin(%d)"),result,PluginIndex);
+  addLog(LOG_LEVEL_INFO, log);
+
+  return result;
 }
 
