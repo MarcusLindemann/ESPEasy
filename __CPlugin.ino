@@ -151,7 +151,7 @@ bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
   const bool successful = true;
   const bool failure = false;
   bool status = successful;
-  
+
   if ( (PluginIndex > CPLUGIN_MAX) ||
        ( (Function < CPLUGIN_PROTOCOL_ADD) || (Function > CPLUGIN_WEBFORM_LOAD) ) )
   {
@@ -173,7 +173,7 @@ bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
       log += PluginIndex;
       log += F(")");
       addLog(LOG_LEVEL_INFO, log);
-    
+
       status = failure;
     }
 
@@ -198,7 +198,7 @@ bool CPlugin_ProtocolAdd(unsigned int PluginIndex,
   log += F(" Plugin(");
   log += PluginIndex;
   log += F(")");
-  
+
   addLog(LOG_LEVEL_INFO, log);
 
   return result;
