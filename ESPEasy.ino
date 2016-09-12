@@ -214,8 +214,6 @@
 #define BOOT_CAUSE_COLD_BOOT                1
 #define BOOT_CAUSE_EXT_WD                  10
 
-#define LOG_BUFFER_MAX                    128
-
 #include <ESP8266WiFi.h>
 #include <DNSServer.h>
 #include <WiFiUdp.h>

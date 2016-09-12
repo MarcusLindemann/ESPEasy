@@ -150,40 +150,55 @@ bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
 {
   const bool successful = true;
   const bool failure = false;
+  bool status = successful;
   
   if ( (PluginIndex > CPLUGIN_MAX) ||
        ( (Function < CPLUGIN_PROTOCOL_ADD) || (Function > CPLUGIN_WEBFORM_LOAD) ) )
   {
-    char log[LOG_BUFFER_MAX];
-    sprintf_P(log, PSTR("CallPluginFunction: PluginIndex or Function out of bounds! Plugin(%d), Function(%d)"),PluginIndex,Function);
+    String log = F("CallPluginFunction: PluginIndex or Function out of bounds! Plugin(");
+    log += PluginIndex;
+    log += F("), Function(");
+    log += Function;
+    log += F(")");
     addLog(LOG_LEVEL_INFO, log);
 
-    return failure;  // we weren't successful
+    status = failure;  // we weren't successful
   }
 
-  CPluginHandler PluginHandler = CPlugin_ptr[PluginIndex];
-  if ( NULL == PluginHandler )
-  {
-    char log[LOG_BUFFER_MAX];
-    sprintf_P(log, PSTR("CallPluginFunction: PluginHandler is NULL! Plugin(%d)"),PluginIndex);
-    addLog(LOG_LEVEL_INFO, log);
-    return failure;
+  if ( status ) {
+    CPluginHandler PluginHandler = CPlugin_ptr[PluginIndex];
+    if ( NULL == PluginHandler )
+    {
+      String log = F("CallPluginFunction: PluginHandler is NULL! Plugin(");
+      log += PluginIndex;
+      log += F(")");
+      addLog(LOG_LEVEL_INFO, log);
+    
+      status = failure;
+    }
+
+    status = status && PluginHandler(Function, Event, Text);
   }
 
-  return PluginHandler(Function, Event, Text);
+  return status;
 }
 
 bool CPlugin_ProtocolAdd(unsigned int PluginIndex,
                          struct EventStruct *Event,
                          String& Text)
 {
-  char log[LOG_BUFFER_MAX];
+  String log = "";
   bool result = CPlugin_CallPluginFunction(PluginIndex,
                                            CPLUGIN_PROTOCOL_ADD,
                                            Event,
                                            Text);
 
-  sprintf_P(log, PSTR("CPlugin_ProtocolAdd: Result %d! Plugin(%d)"),result,PluginIndex);
+  log += F("CPlugin_ProtocolAdd: Result ");
+  log += result;
+  log += F(" Plugin(");
+  log += PluginIndex;
+  log += F(")");
+  
   addLog(LOG_LEVEL_INFO, log);
 
   return result;
