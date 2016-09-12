@@ -121,7 +121,7 @@
 #define ESP_PROJECT_PID           2015050101L
 #define ESP_EASY
 #define VERSION                             9
-#define BUILD                             124
+#define BUILD                             131
 #define BUILD_NOTES                        ""
 #define FEATURE_SPIFFS                  false
 
@@ -232,7 +232,9 @@ ESP8266HTTPUpdateServer httpUpdater(true);
 #if FEATURE_ADC_VCC
 ADC_MODE(ADC_VCC);
 #endif
+#ifndef LWIP_OPEN_SRC
 #define LWIP_OPEN_SRC
+#endif
 #include "lwip/opt.h"
 #include "lwip/udp.h"
 #include "lwip/igmp.h"
@@ -488,6 +490,8 @@ unsigned long elapsed = 0;
 unsigned long loopCounter = 0;
 unsigned long loopCounterLast = 0;
 unsigned long loopCounterMax = 1;
+
+unsigned long flashWrites = 0;
 
 String eventBuffer = "";
 
