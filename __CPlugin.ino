@@ -187,20 +187,42 @@ bool CPlugin_ProtocolAdd(unsigned int PluginIndex,
                          struct EventStruct *Event,
                          String& Text)
 {
-  String log = "";
   bool result = CPlugin_CallPluginFunction(PluginIndex,
                                            CPLUGIN_PROTOCOL_ADD,
                                            Event,
                                            Text);
+  CPlugin_LogHandlerCall(PSTR("CPlugin_ProtocolAdd: Result "),
+			 PluginIndex,
+			 result);
 
-  log += F("CPlugin_ProtocolAdd: Result ");
+  return result;
+}
+
+bool CPlugin_ProtocolTemplate(unsigned int PluginIndex,
+			      struct EventStruct *Event,
+			      String& Text)
+{
+  bool result = CPlugin_CallPluginFunction(PluginIndex,
+					   CPLUGIN_PROTOCOL_TEMPLATE,
+					   Event,
+					   Text);
+  CPlugin_LogHandlerCall(PSTR("CPlugin_ProtocolTemplate: Result"),
+			 PluginIndex,
+			 result);
+
+  return result;
+}
+
+static void CPlugin_LogHandlerCall(const char* prefix,
+				   unsigned int PluginIndex,
+				   bool result)
+{
+  String log = prefix;
+
   log += result;
   log += F(" Plugin(");
   log += PluginIndex;
   log += F(")");
 
   addLog(LOG_LEVEL_INFO, log);
-
-  return result;
 }
-

@@ -356,7 +356,11 @@ void handle_config() {
       byte ProtocolIndex = getProtocolIndex(Settings.Protocol);
       Settings.ControllerPort = Protocol[ProtocolIndex].defaultPort;
       if (Protocol[ProtocolIndex].usesTemplate)
-        CPlugin_ptr[ProtocolIndex](CPLUGIN_PROTOCOL_TEMPLATE, 0, dummyString);
+	{
+	  CPlugin_ProtocolTemplate(ProtocolIndex,
+				   0,
+				   dummyString);
+	}
     }
     else
     {
