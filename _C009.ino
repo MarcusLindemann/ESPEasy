@@ -16,7 +16,7 @@
  - ArduinoJson Library v5.6.4 required (as used by stable R120)
  - parse for HTTP errors 400, 401
  - moved on/off translation for SENSOR_TYPE_SWITCH/DIMMER to FHEM module
- /******************************************************************************/
+ ******************************************************************************/
 
 #define CPLUGIN_009
 #define CPLUGIN_ID_009         9

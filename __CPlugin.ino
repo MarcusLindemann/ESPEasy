@@ -132,9 +132,11 @@ byte CPluginCall(byte Function, struct EventStruct *event)
     case CPLUGIN_PROTOCOL_ADD:
       for (x = 0; x < CPLUGIN_MAX; x++)
       {
-        CPlugin_ProtocolAdd(x,
-                            event,
-                            dummyString);
+        // ignore if individual protocol failed to initialize,
+        // there is nothing we can do about it, anyway.
+        (void) CPlugin_ProtocolAdd(x,
+                                   event,
+                                   dummyString);
 	    }
       return true;
       break;
@@ -143,6 +145,9 @@ byte CPluginCall(byte Function, struct EventStruct *event)
   return false;
 }
 
+/*
+ * Dispatch call to the proper handler for the plugin, make sure plugin and handler exist.
+ */
 bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
                                 byte Function,
                                 struct EventStruct *Event,
@@ -152,6 +157,7 @@ bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
   const bool failure = false;
   bool status = successful;
 
+  // check plugin exists and known function is called. Log failures.
   if ( (PluginIndex > CPLUGIN_MAX) ||
        ( (Function < CPLUGIN_PROTOCOL_ADD) || (Function > CPLUGIN_WEBFORM_LOAD) ) )
   {
@@ -165,6 +171,7 @@ bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
     status = failure;  // we weren't successful
   }
 
+  // check handler for the requested function exists in this plugin. Log failures.
   if ( status ) {
     CPluginHandler PluginHandler = CPlugin_ptr[PluginIndex];
     if ( NULL == PluginHandler )
@@ -177,45 +184,45 @@ bool CPlugin_CallPluginFunction(unsigned int PluginIndex,
       status = failure;
     }
 
+    // Call handler if all is well
     status = status && PluginHandler(Function, Event, Text);
   }
 
   return status;
 }
 
+/*  Wrapper function for calling the plugin function and logging the result. */
+bool CPlugin_LoggedPluginFunction(unsigned int PluginIndex,
+                                  byte Function,
+                                  struct EventStruct *Event,
+                                  String& Text,
+                                  const String& DebugPrefix)
+{
+  bool result = CPlugin_CallPluginFunction(PluginIndex,
+                                           Function,
+                                           Event,
+                                           Text);
+  CPlugin_LogHandlerCall(DebugPrefix,
+                         PluginIndex,
+                         result);
+
+  return result;
+}
+/* Wrapper to add a protocol handler for the plugin */
 bool CPlugin_ProtocolAdd(unsigned int PluginIndex,
                          struct EventStruct *Event,
                          String& Text)
 {
-  bool result = CPlugin_CallPluginFunction(PluginIndex,
-                                           CPLUGIN_PROTOCOL_ADD,
-                                           Event,
-                                           Text);
-  CPlugin_LogHandlerCall(PSTR("CPlugin_ProtocolAdd: Result "),
-			 PluginIndex,
-			 result);
-
-  return result;
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_PROTOCOL_ADD,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_ProtocolAdd: Result "));
 }
-
-bool CPlugin_ProtocolTemplate(unsigned int PluginIndex,
-			      struct EventStruct *Event,
-			      String& Text)
-{
-  bool result = CPlugin_CallPluginFunction(PluginIndex,
-					   CPLUGIN_PROTOCOL_TEMPLATE,
-					   Event,
-					   Text);
-  CPlugin_LogHandlerCall(PSTR("CPlugin_ProtocolTemplate: Result"),
-			 PluginIndex,
-			 result);
-
-  return result;
-}
-
-static void CPlugin_LogHandlerCall(const char* prefix,
-				   unsigned int PluginIndex,
-				   bool result)
+/* Wrapper function for logging the result of calling a handler */
+static void CPlugin_LogHandlerCall(const String& prefix,
+                                   unsigned int PluginIndex,
+                                   bool result)
 {
   String log = prefix;
 
@@ -226,3 +233,71 @@ static void CPlugin_LogHandlerCall(const char* prefix,
 
   addLog(LOG_LEVEL_INFO, log);
 }
+
+
+bool CPlugin_ProtocolTemplate(unsigned int PluginIndex,
+                              struct EventStruct *Event,
+                              String& Text)
+{
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_PROTOCOL_TEMPLATE,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_ProtocolTemplate: Result"));
+}
+
+bool CPlugin_ProtocolSend(unsigned int PluginIndex,
+                          struct EventStruct *Event,
+                          String& Text)
+{
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_PROTOCOL_SEND,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_ProtocolSend: Result"));
+}
+
+bool CPlugin_ProtocolRecv(unsigned int PluginIndex,
+                          struct EventStruct *Event,
+                          String& Text)
+{
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_PROTOCOL_RECV,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_ProtocolRecv: Result"));
+}
+
+bool CPlugin_GetDevicename(unsigned int PluginIndex,
+                           struct EventStruct *Event,
+                           String& Text)
+{
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_GET_DEVICENAME,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_GetDevicename: Result"));
+}
+
+bool CPlugin_WebformSave(unsigned int PluginIndex,
+                         struct EventStruct *Event,
+                         String& Text)
+{
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_WEBFORM_SAVE,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_WebformSave: Result"));
+}
+
+bool CPlugin_WebformLoad(unsigned int PluginIndex,
+                         struct EventStruct *Event,
+                         String& Text)
+{
+  return CPlugin_LoggedPluginFunction(PluginIndex,
+                                      CPLUGIN_WEBFORM_LOAD,
+                                      Event,
+                                      Text,
+                                      PSTR("CPlugin_WebformLoad: Result"));
+}
+
